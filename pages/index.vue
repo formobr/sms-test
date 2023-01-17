@@ -71,59 +71,104 @@
         >
           {{ result.value.message }}
         </div>
-        <loading-state v-if="loading"/>
+        <loading-state v-if="loading" />
       </div>
     </div>
     <div class="row">
       <div class="col-12">
-        <loading-state v-if="tableStatus"/>
-        <table v-if="dbData" class="table table-borderless align-middle">
-          <thead>
-            <tr>
-              <th scope="col">Date</th>
-              <th scope="col">Num Activation</th>
-              <th scope="col">Client ID</th>
-              <th scope="col">Number</th>
-              <th scope="col">Services</th>
-              <th scope="col">Code</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(row, index) of dbData" :key="index">
-              <td>
-                {{ row.datetime }}
-              </td>
-              <td>
-                {{ row.numactivation }}
-              </td>
-              <td>
-                {{ row.clientid }}
-              </td>
-              <td>
-                {{ row.number }} <button v-if="row.number != '0'" @click="copyToClipboard(row.number)" class="btn btn-success">copy</button>
-              </td>
-              <td>
-                {{ row.service }}
-              </td>
-              <td>
-                {{ row.code }} <button v-if="row.code" @click="copyToClipboard(row.code)" class="btn btn-success">copy</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <loading-state v-if="tableStatus" />
+        <div class="table-responsive">
+          <table
+            v-if="dbData"
+            class="table table-borderless align-middle t-data"
+          >
+            <thead>
+              <tr class="align-middle">
+                <th scope="col">
+                  <div class="d-flex justify-content-center">
+                    <div>Date</div>
+                    <div><input id="dateup" type="radio" v-model="sortBy" :value="{ val: 'datetime', direction: true }"/> <label for="dateup"> 🔽</label></div>
+                  <div><input id="datedown" type="radio" v-model="sortBy" :value="{ val: 'datetime', direction: false }" /> <label for="datedown"> 🔼</label></div>
+                  </div>
+                  
+                </th>
+                <th scope="col">Num Activation</th>
+                <th scope="col">
+                  <div class="d-flex justify-content-center">
+                    <div>Client ID</div>
+                    <div><input id="clientidup" type="radio" v-model="sortBy" :value="{ val: 'clientid', direction: true }"/> <label for="clientidup"> 🔽</label></div>
+                  <div><input id="clientiddown" type="radio" v-model="sortBy" :value="{ val: 'clientid', direction: false }" /> <label for="clientiddown"> 🔼</label></div>
+                  </div>
+                </th>
+                <th scope="col">Number</th>
+                <th scope="col">
+                  <div class="d-flex justify-content-center">
+                    <div>Service</div>
+                    <div><input id="serviceup" type="radio" v-model="sortBy" :value="{ val: 'service', direction: true }"/> <label for="serviceup"> 🔽</label></div>
+                  <div><input id="servicedown" type="radio" v-model="sortBy" :value="{ val: 'service', direction: false }" /> <label for="servicedown"> 🔼</label></div>
+                  </div>
+                </th>
+                <th scope="col">Code</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, index) of sortedArray" :key="index">
+                <td>
+                  {{ getLocalTime(row.datetime) }}
+                  <i
+                    class="bi-alarm"
+                    style="font-size: 2rem; color: cornflowerblue"
+                  ></i>
+                </td>
+                <td>
+                  {{ row.numactivation }}
+                </td>
+                <td>
+                  {{ row.clientid }}
+                </td>
+                <td>
+                  {{ row.number }}
+                  <button
+                    v-if="row.number != '0'"
+                    @click="copyToClipboard(row.number)"
+                    class="btn btn-success"
+                  >
+                    copy
+                  </button>
+                </td>
+                <td>
+                  {{ row.service }}
+                </td>
+                <td>
+                  {{ row.code }}
+                  <button
+                    v-if="row.code"
+                    @click="copyToClipboard(row.code)"
+                    class="btn btn-success"
+                  >
+                    copy
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
     <div class="row mt-5">
-      <div class="col-12"><button class="btn btn-danger" @click="clearTable()">Clear table</button></div>
+      <div class="col-12">
+        <button class="btn btn-danger" @click="clearTable()">
+          Clear table
+        </button>
+      </div>
     </div>
   </div>
-
 </template>
 
 <script setup>
 //local storage
-function saveValue (key, val) {
-  localStorage[key] = val
+function saveValue(key, val) {
+  localStorage[key] = val;
 }
 
 const login = ref();
@@ -160,7 +205,7 @@ const getNumber = async () => {
   });
   result.value = data;
   loading.value = false;
-  dbData.value = await getData(login.value)
+  dbData.value = await getData(login.value);
 };
 //Websocket setup
 import { io } from "socket.io-client";
@@ -168,7 +213,6 @@ import { io } from "socket.io-client";
 
 const dbData = ref();
 const connected = ref(false);
-
 
 onMounted(async () => {
   if (localStorage.login) login.value = localStorage.login;
@@ -181,13 +225,12 @@ onMounted(async () => {
   });
   socket.on("disconnect", () => {
     connected.value = socket.connected;
-    console.log(`client reconnected ${socket.id}`)
+    console.log(`client reconnected ${socket.id}`);
   });
   socket.on("message", async (data) => {
     console.log(data);
     dbData.value = await getData(login.value);
   });
-
 });
 
 //Get data from table
@@ -195,33 +238,73 @@ onMounted(async () => {
 watch(login, async (newVal) => {
   dbData.value = await getData(newVal);
 });
-const tableStatus = ref()
+const tableStatus = ref();
 async function getData(log) {
-  tableStatus.value = true
+  tableStatus.value = true;
   const { data } = await useFetch(() => `/api/getDb`, {
     query: {
       login: log,
     },
   });
-  tableStatus.value = null
+  tableStatus.value = null;
   return data.value;
 }
 
 const copyToClipboard = (val) => {
-  navigator.clipboard.writeText(val)
+  navigator.clipboard.writeText(val);
+};
+
+async function clearTable() {
+  const { data } = await useFetch("/api/clearTable");
+  console.log(data.value);
 }
 
-
-async function clearTable () {
-  const {data} = await useFetch('/api/clearTable')
-  console.log(data.value)
+//local time
+const getLocalTime =  (time) => {
+  const date = new Date(time)
+  const dateUser = date.getTimezoneOffset() / -60
+  date.setHours(date.getHours()+dateUser)
+  const dateString = date.toString().split('GMT')
+  return dateString[0]
 }
 
+//sort
+const sortBy = ref({ val: "datetime", direction: true });
 
+const sortedArray = computed(() => {
+  const sortedArray = dbData.value;
+  sortedArray.sort(function (a, b) {
+    if (a[sortBy.value.val] > b[sortBy.value.val]) {
+      if (sortBy.value.direction) return -1;
+      return 1;
+    }
+    if (a[sortBy.value.val] < b[sortBy.value.val]) {
+      if (sortBy.value.direction) return 1;
+      return -1;
+    }
+    return 0;
+  });
+  return sortedArray;
+});
 </script>
 
 <style lang="scss" scoped>
 .mr-2 {
   margin-right: 2rem;
+}
+.t-data {
+  th {
+    text-align: center;
+    input {
+      height: 0;
+      position: absolute;
+      width: 0;
+      visibility: hidden;
+    }
+    label{
+      cursor: pointer;
+      margin: 0 0.1rem;
+    }
+  }
 }
 </style>
