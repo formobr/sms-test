@@ -3,7 +3,6 @@ import pool from "../db/";
 export default defineEventHandler(async (event) => {
   let result = {};
   const params = await readBody(event);
-  console.log(params)
   const { activationId, code, text } = params;
   //If empty params
   if (!activationId || !code || !text)
@@ -38,7 +37,7 @@ export default defineEventHandler(async (event) => {
       WHERE numactivation = '${activationId}' 
       `;
       await pool.query(query).then(() =>{
-        result = {message: 'Update succsessful', statusCode: 200}
+        result = {"status":"SUCCESS"}
       }).catch(async(err) => await(result = err));
     })
     .catch(async(err) => await(result = err));
