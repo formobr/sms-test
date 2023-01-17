@@ -41,7 +41,8 @@ export default defineEventHandler(async (event) => {
       }).catch(async(err) => await(result = err));
     })
     .catch(async(err) => await(result = err));
-    if (result.statusCode) $io.emit("message", "update");
-  
+    
+    if (result.status) {await $io.emit("message", "update")};
+    
   return result;
 });

@@ -29,8 +29,6 @@ export default defineEventHandler(async (event) => {
   await axios
     .post("https://proxy.otp-service.online/v1/GetNumber", params)
     .then(async (data) => {
-      console.log(params)
-      console.log(data.data)
       const rows = data.data;
       const { activationId, ammount, number, status, error } = rows;
 

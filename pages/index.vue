@@ -181,6 +181,7 @@ onMounted(async () => {
   });
   socket.on("disconnect", () => {
     connected.value = socket.connected;
+    console.log(`client reconnected ${socket.id}`)
   });
   socket.on("message", async (data) => {
     console.log(data);
