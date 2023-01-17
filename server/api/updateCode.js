@@ -2,19 +2,20 @@ import pool from "../db/";
 
 export default defineEventHandler(async (event) => {
   let result = {};
-  const params = getQuery(event);
-  const { numActivation, number, code, text } = params;
+  const params = await readBody(event);
+  console.log(params)
+  const { activationId, code, text } = params;
   //If empty params
-  if (!numActivation || !number || !code || !text)
+  if (!activationId || !code || !text)
     return (result = {
       statusCode: 500,
-      message: `Activation number, number, code and text cannot be null`,
+      message: `Activation number, code and text cannot be null`,
     });
   const date = new Date(Date.now());
   let oldText;
   let oldCode;
   let query = `SELECT text, code FROM handapi
-    WHERE numActivation = '${numActivation}'`;
+    WHERE numactivation = '${activationId}'`;
   await pool
     .query(query)
     .then(async (data) => {
@@ -32,10 +33,9 @@ export default defineEventHandler(async (event) => {
 
       query = `UPDATE handapi
       SET datetime = '${date.toISOString()}',
-      number = ${number},
       text = '${oldText}',
       code = '${oldCode}'
-      WHERE numactivation = '${numActivation}' 
+      WHERE numactivation = '${activationId}' 
       `;
       await pool.query(query).then(() =>{
         result = {message: 'Update succsessful', statusCode: 200}

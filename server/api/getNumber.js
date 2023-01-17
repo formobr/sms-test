@@ -29,12 +29,14 @@ export default defineEventHandler(async (event) => {
   await axios
     .post("https://proxy.otp-service.online/v1/GetNumber", params)
     .then(async (data) => {
+      console.log(params)
+      console.log(data.data)
       const rows = data.data;
       const { activationId, ammount, number, status, error } = rows;
 
       //insert information to DB
       const query = `INSERT INTO handapi (numactivation, ammount, service, shortnameservice, number, status, error, clientId, id)
-        VALUES ('${activationId}', ${ammount}, '${service}', '${shortNameService}',${number}, ${status}, ${error}, ${clientId}, '${login}')`;
+        VALUES ('${activationId}', ${ammount}, '${shortNameService}', '${service}',${number}, ${status}, ${error}, ${clientId}, '${login}')`;
       await pool.query(query).then(() => {
         // on success
         result.message = `Saved in DB`;

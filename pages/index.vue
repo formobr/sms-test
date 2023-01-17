@@ -34,7 +34,7 @@
               <option
                 v-for="(country, index) of countries"
                 :key="index"
-                :value="country.value"
+                :value="country.name"
               >
                 {{ country.name }}
               </option>
@@ -114,37 +114,18 @@
       </div>
     </div>
     <div class="row mt-5">
-      <div class="col-12">
-        <h3>For test post request to /api/updatecode</h3>
-        <div class="d-flex align-items-center mb-2">
-          <div class="flex-fill mr-2">
-            <input class="form-control" type="text" placeholder="Num activation" v-model="numActivation">
-          </div>
-          <div class="flex-fill mr-2">
-            <input class="form-control"  type="text" v-model="number"  placeholder="Number">
-          </div>
-          <div class="flex-fill mr-2">
-            <input class="form-control"  type="text" v-model="code" placeholder="Code">
-          </div>
-          <div class="flex-fill mr-2">
-            <input class="form-control"  type="text" v-model="text" placeholder="Text">
-          </div>
-          <div>
-            <button @click='sendRequest' class="btn btn-primary">Send</button>
-          </div>
-        </div>
-        <div v-if="requestResult" class="alert alert-primary">
-          {{requestResult}}
-        </div>
-        <loading-state v-if="requestStatus" />
-      </div>
-      <button class="btn btn-primary" @click="clearTable()">Clear table</button>
+      <div class="col-12"><button class="btn btn-danger" @click="clearTable()">Clear table</button></div>
     </div>
   </div>
 
 </template>
 
 <script setup>
+//local storage
+function saveValue (key, val) {
+  localStorage[key] = val
+}
+
 const login = ref();
 const apiPassword = ref();
 
@@ -157,7 +138,7 @@ const fetchData = await useFetch("/api/countriesAndServices");
 countries.value = fetchData.data.value.countries;
 services.value = fetchData.data.value.services;
 
-const selectedCountry = ref(countries.value[0].value);
+const selectedCountry = ref(countries.value[0].name);
 const selectedService = ref(services.value[0]);
 const clientId = ref(1);
 
@@ -170,8 +151,8 @@ const getNumber = async () => {
   const { data } = await useFetch(`/api/getNumber`, {
     query: {
       country: selectedCountry.value,
-      service: selectedService.value.name,
-      shortNameService: selectedService.value.value,
+      service: selectedService.value.value,
+      shortNameService: selectedService.value.name,
       login: login.value,
       apiPassword: apiPassword.value,
       clientId: clientId.value,
@@ -229,28 +210,6 @@ const copyToClipboard = (val) => {
   navigator.clipboard.writeText(val)
 }
 
-
-//TEST autoRenew data
-const numActivation = ref()
-const number = ref()
-const code = ref()
-const text = ref()
-const requestStatus = ref()
-const requestResult = ref()
-  //send post request to /api/updateCode
-const sendRequest = async () => {
-  requestStatus.value = true
-  const {data} = await useFetch('/api/updateCode', {
-    query: {
-      numActivation:numActivation, 
-      number: number, 
-      code: code, 
-      text:text
-    }
-  })
-  requestStatus.value = null
-  requestResult.value = data.value
-}
 
 async function clearTable () {
   const {data} = await useFetch('/api/clearTable')

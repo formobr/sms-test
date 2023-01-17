@@ -1,14 +1,14 @@
 const countries = [
     {
-      name: "Thailand",
+      name: "thailand",
       value: "TH",
     },
     {
-      name: "Russia",
+      name: "russia",
       value: "RU",
     },
     {
-        name: "Uited Kingdom",
+        name: "uited Kingdom",
         value: "UK"
 
     },
