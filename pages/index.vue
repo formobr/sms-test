@@ -32,11 +32,22 @@
           <div class="flex-fill mr-2">
             <select class="form-select" v-model="selectedCountry">
               <option
-                v-for="(country, index) of countries"
+                v-for="(country, value, index) of countries"
                 :key="index"
                 :value="country.name"
               >
                 {{ country.name }}
+              </option>
+            </select>
+          </div>
+          <div v-if="countries[selectedCountry].providers" class="flex-fill mr-2">
+            <select class="form-select" v-model="provider">
+              <option
+                v-for="(provider, index) of countries[selectedCountry].providers"
+                :key="index"
+                :value="provider"
+              >
+                {{ provider }}
               </option>
             </select>
           </div>
@@ -47,7 +58,7 @@
                 :key="index"
                 :value="service"
               >
-                {{ service.name }}
+                {{ service.name }} <span v-if="numbersCount">{{numbersCount[index].value}}</span> <loading-state  v-if="numbersStatus"/>
               </option>
             </select>
           </div>
@@ -80,7 +91,7 @@
         <div class="table-responsive">
           <table
             v-if="dbData"
-            class="table table-borderless align-middle t-data"
+            class="table table-striped align-middle t-data"
           >
             <thead>
               <tr class="align-middle">
@@ -115,10 +126,6 @@
               <tr v-for="(row, index) of sortedArray" :key="index">
                 <td>
                   {{ getLocalTime(row.datetime) }}
-                  <i
-                    class="bi-alarm"
-                    style="font-size: 2rem; color: cornflowerblue"
-                  ></i>
                 </td>
                 <td>
                   {{ row.numactivation }}
@@ -183,7 +190,7 @@ const fetchData = await useFetch("/api/countriesAndServices");
 countries.value = fetchData.data.value.countries;
 services.value = fetchData.data.value.services;
 
-const selectedCountry = ref(countries.value[0].name);
+const selectedCountry = ref(countries.value.Thailand.name);
 const selectedService = ref(services.value[0]);
 const clientId = ref(1);
 
@@ -198,6 +205,7 @@ const getNumber = async () => {
       country: selectedCountry.value,
       service: selectedService.value.value,
       shortNameService: selectedService.value.name,
+      provider: provider.value,
       login: login.value,
       apiPassword: apiPassword.value,
       clientId: clientId.value,
@@ -214,29 +222,14 @@ import { io } from "socket.io-client";
 const dbData = ref();
 const connected = ref(false);
 
-onMounted(async () => {
-  if (localStorage.login) login.value = localStorage.login;
-  if (localStorage.password) apiPassword.value = localStorage.password;
-  const socket = io();
 
-  socket.on("connect", () => {
-    connected.value = socket.connected;
-    console.log(`client connected ${socket.id}`);
-  });
-  socket.on("disconnect", () => {
-    connected.value = socket.connected;
-    console.log(`client reconnected ${socket.id}`);
-  });
-  socket.on("message", async (data) => {
-    console.log(data);
-    dbData.value = await getData(login.value);
-  });
-});
 
 //Get data from table
 
 watch(login, async (newVal) => {
+  getOperator(newVal)
   dbData.value = await getData(newVal);
+ 
 });
 const tableStatus = ref();
 async function getData(log) {
@@ -256,11 +249,11 @@ const copyToClipboard = (val) => {
 
 async function clearTable() {
   const { data } = await useFetch("/api/clearTable");
-  console.log(data.value);
 }
 
 //local time
 const getLocalTime =  (time) => {
+  if (!time) return null
   const date = new Date(time)
   const dateUser = date.getTimezoneOffset() / -60
   date.setHours(date.getHours()+dateUser)
@@ -273,7 +266,15 @@ const sortBy = ref({ val: "datetime", direction: true });
 
 const sortedArray = computed(() => {
   const sortedArray = dbData.value;
+
   sortedArray.sort(function (a, b) {
+        // nulls sort after anything else
+    if (a[sortBy.value.val] === null) {
+        return 1;
+    }
+    if (b[sortBy.value.val] === null) {
+        return -1;
+    }
     if (a[sortBy.value.val] > b[sortBy.value.val]) {
       if (sortBy.value.direction) return -1;
       return 1;
@@ -285,6 +286,57 @@ const sortedArray = computed(() => {
     return 0;
   });
   return sortedArray;
+});
+
+//select operator
+const provider = ref(countries.value[selectedCountry.value].providers[0])
+const numbersCount = ref()
+watch(selectedCountry, async() =>{
+  provider.value = 'ANY'
+  await getOperator(login.value)
+})
+watch(provider, async() =>{
+  await getOperator(login.value)
+})
+const numbersStatus = ref()
+
+async function getOperator(log) {
+  numbersCount.value = null
+  numbersStatus.value = true
+  const { data } = await useLazyFetch(() => `/api/getOperator`, {
+    query: {
+      country: selectedCountry.value,
+      login: log,
+      apiPassword: apiPassword.value,
+      provider: provider.value,
+      service: selectedService.value.value,
+    },
+  });
+  numbersStatus.value = null
+  numbersCount.value = data.value
+}
+
+//
+
+onMounted(async () => {
+  if (localStorage.login) login.value = localStorage.login;
+  if (localStorage.password) apiPassword.value = localStorage.password;
+  await getOperator()
+  const socket = io();
+
+  socket.on("connect", () => {
+    connected.value = socket.connected;
+    console.log(`client connected ${socket.id}`);
+  });
+  socket.on("disconnect", () => {
+    connected.value = socket.connected;
+    console.log(`client reconnected ${socket.id}`);
+  });
+  socket.on("message", async (data) => {
+    console.log(data);
+    dbData.value = await getData(login.value);
+  });
+  
 });
 </script>
 
@@ -305,6 +357,14 @@ const sortedArray = computed(() => {
       cursor: pointer;
       margin: 0 0.1rem;
     }
+  }
+  td{
+        padding: 2rem 1rem
+  }
+}
+.form-select{
+  option span{
+    color: red;
   }
 }
 </style>

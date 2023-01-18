@@ -1,15 +1,15 @@
 import axios from "axios";
-import pool from "../db/";
+import pool from "../db/mysql";
 
 export default defineEventHandler(async (event) => {
+
   const result = {
     message: null,
     error: null,
   };
   //get params
   const query = getQuery(event);
-  const { country, service, shortNameService, clientId, login, apiPassword } = query;
-  
+  const { country, provider, service, shortNameService, clientId, login, apiPassword } = query;
   //check client ID and password != null
   if (!apiPassword && !clientId) {
     result.message = "Please enter your client ID and password";
@@ -18,14 +18,25 @@ export default defineEventHandler(async (event) => {
   }
 
   //call api Get a number
-  const params = {
+  let params = {
     clientId: login,
     apiPassword: apiPassword,
     service: service,
     detail: {
       country: country,
+      provider: provider
     },
   };
+  if (provider === 'ANY') {
+    params = {
+      clientId: login,
+      apiPassword: apiPassword,
+      service: service,
+      detail: {
+        country: country
+      },
+    };
+  }
   await axios
     .post("https://proxy.otp-service.online/v1/GetNumber", params)
     .then(async (data) => {
@@ -33,7 +44,7 @@ export default defineEventHandler(async (event) => {
       const { activationId, ammount, number, status, error } = rows;
 
       //insert information to DB
-      const query = `INSERT INTO handapi (numactivation, ammount, service, shortnameservice, number, status, error, clientId, id)
+      const query = `INSERT INTO handAPI (numActivation, ammount, service, shortNameService, number, status, error, clientID, id)
         VALUES ('${activationId}', ${ammount}, '${shortNameService}', '${service}',${number}, ${status}, ${error}, ${clientId}, '${login}')`;
       await pool.query(query).then(() => {
         // on success

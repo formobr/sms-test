@@ -1,4 +1,4 @@
-import pool from "../db/";
+import pool from "../db/mysql";
 
 export default defineEventHandler(async (event) => {
   let result = {};
@@ -13,28 +13,29 @@ export default defineEventHandler(async (event) => {
   const date = new Date(Date.now());
   let oldText;
   let oldCode;
-  let query = `SELECT text, code FROM handapi
-    WHERE numactivation = '${activationId}'`;
+  let query = `SELECT text, code FROM handAPI
+    WHERE numActivation = '${activationId}'`;
   await pool
     .query(query)
     .then(async (data) => {
-      if (!data.rows[0]) {
+      if (!data[0]) {
         result = { message: "Activation code not found" };
         return;
       }
-      oldText = data.rows[0].text;
-      oldCode = data.rows[0].code;
+      oldText = data[0][0].text;
+      oldCode = data[0][0].code;
+  
       //If activation code not found
 
       //chech old values of text and code
       oldText ? (oldText = `${oldText};${text}`) : (oldText = text);
       oldCode ? (oldCode = `${oldCode};${code}`) : (oldCode = code);
 
-      query = `UPDATE handapi
-      SET datetime = '${date.toISOString()}',
+      query = `UPDATE handAPI
+      SET dateTime = '${date.toISOString().slice(0, 19).replace('T', ' ')}',
       text = '${oldText}',
       code = '${oldCode}'
-      WHERE numactivation = '${activationId}' 
+      WHERE numActivation = '${activationId}' 
       `;
       await pool.query(query).then(() =>{
         result = {"status":"SUCCESS"}
