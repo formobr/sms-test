@@ -2,7 +2,7 @@ const countries = {
   Thailand:{
     name: "Thailand",
     value: "th",
-    providers: ['ANY', 'AIS', 'dtac', 'truemove', ]
+    providers: ['ANY', 'AIS', 'dtac', 'truemove']
   },
   Laos:{
     name: "Laos",
@@ -12,7 +12,7 @@ const countries = {
   Vietnam:{
     name: "Vietnam",
     value: "vn",
-    providers: ['ANY']
+    providers: ['ANY','vietnamobile']
   },
 }
 const services = [
@@ -38,11 +38,6 @@ const services = [
   {
     name: "BigC",
     value: "zu",
-    
-  },
-  {
-    name: "LINE MAN",
-    value: "lim",
     
   },
   {
