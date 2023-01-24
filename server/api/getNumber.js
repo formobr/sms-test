@@ -42,10 +42,10 @@ export default defineEventHandler(async (event) => {
     .then(async (data) => {
       const rows = data.data;
       const { activationId, ammount, number, status, error } = rows;
-
+      const date = new Date(Date.now());
       //insert information to DB
-      const query = `INSERT INTO handAPI (numActivation, ammount, service, shortNameService, number, status, error, clientID, id)
-        VALUES ('${activationId}', ${ammount}, '${shortNameService}', '${service}',${number}, ${status}, ${error}, ${clientId}, '${login}')`;
+      const query = `INSERT INTO handAPI (numActivation, ammount, service, shortNameService, number, status, error, clientID, id, datetime, operator)
+        VALUES ('${activationId}', ${ammount}, '${shortNameService}', '${service}',${number}, ${status}, ${error}, ${clientId}, '${login}', '${date.toISOString().slice(0, 19).replace('T', ' ')}', '${provider}')`;
       await pool.query(query).then(() => {
         // on success
         result.message = `Saved in DB`;

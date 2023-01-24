@@ -40,10 +40,14 @@
               </option>
             </select>
           </div>
-          <div v-if="countries[selectedCountry].providers" class="flex-fill mr-2">
+          <div
+            v-if="countries[selectedCountry].providers"
+            class="flex-fill mr-2"
+          >
             <select class="form-select" v-model="provider">
               <option
-                v-for="(provider, index) of countries[selectedCountry].providers"
+                v-for="(provider, index) of countries[selectedCountry]
+                  .providers"
                 :key="index"
                 :value="provider"
               >
@@ -58,7 +62,9 @@
                 :key="index"
                 :value="service"
               >
-                {{ service.name }} <span v-if="numbersCount">{{numbersCount[index].value}}</span> <loading-state  v-if="numbersStatus"/>
+                {{ service.name }}
+                <span v-if="numbersCount">{{ numbersCount[index].value }}</span>
+                <loading-state v-if="numbersStatus" />
               </option>
             </select>
           </div>
@@ -89,49 +95,131 @@
       <div class="col-12">
         <loading-state v-if="tableStatus" />
         <div class="table-responsive">
-          <table
-            v-if="dbData"
-            class="table table-striped align-middle t-data"
-          >
+          <table v-if="dbData" class="table table-striped align-middle t-data">
             <thead>
-              <tr class="align-middle">
-                <th scope="col">
-                  <div class="d-flex justify-content-center">
-                    <div>Date</div>
-                    <div><input id="dateup" type="radio" v-model="sortBy" :value="{ val: 'datetime', direction: true }"/> <label for="dateup"> 🔽</label></div>
-                  <div><input id="datedown" type="radio" v-model="sortBy" :value="{ val: 'datetime', direction: false }" /> <label for="datedown"> 🔼</label></div>
-                  </div>
-                  
+              <tr>
+                <th colspan="2">
+                  <Datepicker v-model="datePick" range></Datepicker>
                 </th>
-                <th scope="col">Num Activation</th>
+                <th></th>
+                <th></th>
+                <th>
+                  <div class="input-group">
+                    <input
+                      class="form-control"
+                      type="number"
+                      placeholder="Search"
+                      v-model="search"
+                    />
+                  </div>
+                </th>
+                <th></th>
+                <th></th>
+                <th>
+                  <button
+                    @click="hideAll"
+                    class="btn btn-secondary mb-2 col-12"
+                  >
+                    Hide all</button
+                  ><br />
+                </th>
+              </tr>
+              <tr class="sort">
                 <th scope="col">
-                  <div class="d-flex justify-content-center">
+                  <div class="d-flex">
+                    <div>Date</div>
+                    <div>
+                      <input
+                        id="dateup"
+                        type="radio"
+                        v-model="sortBy"
+                        :value="{ val: 'datetime', direction: true }"
+                      />
+                      <label for="dateup"> 🔽</label>
+                    </div>
+                    <div>
+                      <input
+                        id="datedown"
+                        type="radio"
+                        v-model="sortBy"
+                        :value="{ val: 'datetime', direction: false }"
+                      />
+                      <label for="datedown"> 🔼</label>
+                    </div>
+                  </div>
+                </th>
+                <th scope="col">Time</th>
+                <th scope="col">
+                  <div class="d-flex">
                     <div>Client ID</div>
-                    <div><input id="clientidup" type="radio" v-model="sortBy" :value="{ val: 'clientid', direction: true }"/> <label for="clientidup"> 🔽</label></div>
-                  <div><input id="clientiddown" type="radio" v-model="sortBy" :value="{ val: 'clientid', direction: false }" /> <label for="clientiddown"> 🔼</label></div>
+                    <div>
+                      <input
+                        id="clientidup"
+                        type="radio"
+                        v-model="sortBy"
+                        :value="{ val: 'clientid', direction: true }"
+                      />
+                      <label for="clientidup"> 🔽</label>
+                    </div>
+                    <div>
+                      <input
+                        id="clientiddown"
+                        type="radio"
+                        v-model="sortBy"
+                        :value="{ val: 'clientid', direction: false }"
+                      />
+                      <label for="clientiddown"> 🔼</label>
+                    </div>
+                  </div>
+                </th>
+                <th scope="col">
+                  <div class="d-flex">
+                    <div>Service</div>
+                    <div>
+                      <input
+                        id="serviceup"
+                        type="radio"
+                        v-model="sortBy"
+                        :value="{ val: 'service', direction: true }"
+                      />
+                      <label for="serviceup"> 🔽</label>
+                    </div>
+                    <div>
+                      <input
+                        id="servicedown"
+                        type="radio"
+                        v-model="sortBy"
+                        :value="{ val: 'service', direction: false }"
+                      />
+                      <label for="servicedown"> 🔼</label>
+                    </div>
                   </div>
                 </th>
                 <th scope="col">Number</th>
-                <th scope="col">
-                  <div class="d-flex justify-content-center">
-                    <div>Service</div>
-                    <div><input id="serviceup" type="radio" v-model="sortBy" :value="{ val: 'service', direction: true }"/> <label for="serviceup"> 🔽</label></div>
-                  <div><input id="servicedown" type="radio" v-model="sortBy" :value="{ val: 'service', direction: false }" /> <label for="servicedown"> 🔼</label></div>
-                  </div>
-                </th>
+                <th scope="col">Operator</th>
                 <th scope="col">Code</th>
+                <th scope="col">
+                  <button @click="showAll" class="btn btn-success col-12">
+                    Show all
+                  </button>
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(row, index) of sortedArray" :key="index">
+              <tr
+                v-for="(row, index) of sortedArray"
+                :key="index"
+                :class="{ 'd-none': row.hidden }"
+              >
                 <td>
-                  {{ getLocalTime(row.datetime) }}
+                  {{ getLocalDate(row.datetime) }}
                 </td>
-                <td>
-                  {{ row.numactivation }}
-                </td>
+                <td>{{ getLocalTime(row.datetime) }}</td>
                 <td>
                   {{ row.clientid }}
+                </td>
+                <td>
+                  {{ row.service }}
                 </td>
                 <td>
                   {{ row.number }}
@@ -144,7 +232,7 @@
                   </button>
                 </td>
                 <td>
-                  {{ row.service }}
+                  {{ row.operator }}
                 </td>
                 <td>
                   {{ row.code }}
@@ -156,17 +244,18 @@
                     copy
                   </button>
                 </td>
+                <td>
+                  <button
+                    @click="hideOne(row.numActivation)"
+                    class="btn btn-danger col-12"
+                  >
+                    Hide
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
-    <div class="row mt-5">
-      <div class="col-12">
-        <button class="btn btn-danger" @click="clearTable()">
-          Clear table
-        </button>
       </div>
     </div>
   </div>
@@ -175,7 +264,11 @@
 <script setup>
 //local storage
 function saveValue(key, val) {
-  localStorage[key] = val;
+  localStorage.setItem(key, val);
+}
+
+function removeValue(key) {
+  localStorage.removeItem(key);
 }
 
 const login = ref();
@@ -222,14 +315,11 @@ import { io } from "socket.io-client";
 const dbData = ref();
 const connected = ref(false);
 
-
-
 //Get data from table
 
 watch(login, async (newVal) => {
-  getOperator(newVal)
+  getOperator(newVal);
   dbData.value = await getData(newVal);
- 
 });
 const tableStatus = ref();
 async function getData(log) {
@@ -247,33 +337,52 @@ const copyToClipboard = (val) => {
   navigator.clipboard.writeText(val);
 };
 
-async function clearTable() {
-  const { data } = await useFetch("/api/clearTable");
-}
-
 //local time
-const getLocalTime =  (time) => {
-  if (!time) return null
-  const date = new Date(time)
-  const dateUser = date.getTimezoneOffset() / -60
-  date.setHours(date.getHours()+dateUser)
-  const dateString = date.toString().split('GMT')
-  return dateString[0]
-}
+import dateNode from "date-and-time";
+const getLocalDate = (time) => {
+  if (!time) return null;
+  const date = new Date(time);
+  const dateUser = date.getTimezoneOffset() / -60;
+  date.setHours(date.getHours() + dateUser);
+  return dateNode.format(date, "DD.MM.YYYY");
+};
+const getLocalTime = (time) => {
+  if (!time) return null;
+  const date = new Date(time);
+  const dateUser = date.getTimezoneOffset() / -60;
+  date.setHours(date.getHours() + dateUser);
+  return dateNode.format(date, "HH:MM");
+};
 
-//sort
+//Search and sort
 const sortBy = ref({ val: "datetime", direction: true });
+const search = ref();
 
 const sortedArray = computed(() => {
-  const sortedArray = dbData.value;
+  let sortedArray = dbData.value;
+  if (search.value) {
+    sortedArray = sortedArray.filter(item => item.number.toString().includes(search.value.toString()))
+    return sortedArray
+  }
+
+  if (datePick.value) {
+    const date = [
+      new Date(datePick.value[0]).toJSON(),
+      new Date(datePick.value[1]).toJSON(),
+    ];
+
+    sortedArray = sortedArray.filter(
+      (item) => item.datetime >= date[0] && item.datetime <= date[1]
+    );
+  }
 
   sortedArray.sort(function (a, b) {
-        // nulls sort after anything else
+    // nulls sort after anything else
     if (a[sortBy.value.val] === null) {
-        return 1;
+      return 1;
     }
     if (b[sortBy.value.val] === null) {
-        return -1;
+      return -1;
     }
     if (a[sortBy.value.val] > b[sortBy.value.val]) {
       if (sortBy.value.direction) return -1;
@@ -289,20 +398,20 @@ const sortedArray = computed(() => {
 });
 
 //select operator
-const provider = ref(countries.value[selectedCountry.value].providers[0])
-const numbersCount = ref()
-watch(selectedCountry, async() =>{
-  provider.value = 'ANY'
-  await getOperator(login.value)
-})
-watch(provider, async() =>{
-  await getOperator(login.value)
-})
-const numbersStatus = ref()
+const provider = ref(countries.value[selectedCountry.value].providers[0]);
+const numbersCount = ref();
+watch(selectedCountry, async () => {
+  provider.value = "ANY";
+  await getOperator(login.value);
+});
+watch(provider, async () => {
+  await getOperator(login.value);
+});
+const numbersStatus = ref();
 
 async function getOperator(log) {
-  numbersCount.value = null
-  numbersStatus.value = true
+  numbersCount.value = null;
+  numbersStatus.value = true;
   const { data } = await useLazyFetch(() => `/api/getOperator`, {
     query: {
       country: selectedCountry.value,
@@ -312,16 +421,61 @@ async function getOperator(log) {
       service: selectedService.value.value,
     },
   });
-  numbersStatus.value = null
-  numbersCount.value = data.value
+  numbersStatus.value = null;
+  numbersCount.value = data.value;
 }
 
-//
+// hide rows
+const hideOne = async (num) => {
+  await useFetch("/api/hideOne", {
+    query: {
+      numActivation: num,
+    },
+  });
+};
+
+const hideAll = async () => {
+  await useFetch("/api/hideAll", {
+    query: {
+      id: login.value,
+    },
+  });
+};
+
+const showAll = async () => {
+  await useFetch("/api/showAll", {
+    query: {
+      id: login.value,
+    },
+  });
+};
+
+//date picker
+const clearDate = () => {
+  datePick.value = null;
+  localStorage.dateFrom = null;
+  localStorage.dateTo = null;
+};
+const datePick = ref();
+
+watch(datePick, (newVal) => {
+  if (newVal) {
+    saveValue("dateFrom", newVal[0]);
+    saveValue("dateTo", newVal[1]);
+  } else {
+    removeValue("dateFrom");
+    removeValue("dateTo");
+  }
+});
+
+import Datepicker from "@vuepic/vue-datepicker";
+import "@vuepic/vue-datepicker/dist/main.css";
 
 onMounted(async () => {
   if (localStorage.login) login.value = localStorage.login;
   if (localStorage.password) apiPassword.value = localStorage.password;
-  await getOperator()
+  if (localStorage.dateFrom && localStorage.dateTo)
+    datePick.value = [localStorage.dateFrom, localStorage.dateTo];
   const socket = io();
 
   socket.on("connect", () => {
@@ -333,10 +487,8 @@ onMounted(async () => {
     console.log(`client reconnected ${socket.id}`);
   });
   socket.on("message", async (data) => {
-    console.log(data);
     dbData.value = await getData(login.value);
   });
-  
 });
 </script>
 
@@ -345,25 +497,24 @@ onMounted(async () => {
   margin-right: 2rem;
 }
 .t-data {
-  th {
-    text-align: center;
+  .sort {
     input {
       height: 0;
       position: absolute;
       width: 0;
       visibility: hidden;
     }
-    label{
+    label {
       cursor: pointer;
       margin: 0 0.1rem;
     }
   }
-  td{
-        padding: 2rem 1rem
+  td {
+    padding: 1rem;
   }
 }
-.form-select{
-  option span{
+.form-select {
+  option span {
     color: red;
   }
 }

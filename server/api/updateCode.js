@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
       statusCode: 500,
       message: `Activation number, code and text cannot be null`,
     });
-  const date = new Date(Date.now());
+  
   let oldText;
   let oldCode;
   let query = `SELECT text, code FROM handAPI
@@ -32,7 +32,6 @@ export default defineEventHandler(async (event) => {
       oldCode ? (oldCode = `${oldCode};${code}`) : (oldCode = code);
 
       query = `UPDATE handAPI
-      SET dateTime = '${date.toISOString().slice(0, 19).replace('T', ' ')}',
       text = '${oldText}',
       code = '${oldCode}'
       WHERE numActivation = '${activationId}' 

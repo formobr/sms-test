@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
       clientId: login,
       apiPassword: apiPassword,
       service: service.value,
-      country: country,
+      country: country.toLowerCase(),
       provider: provider,
     };
     await axios
