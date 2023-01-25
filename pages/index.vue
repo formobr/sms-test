@@ -225,7 +225,7 @@
                   {{ row.number }}
                   <button
                     v-if="row.number != '0'"
-                    @click="copyToClipboard(row.number, countries[row.country].substring+1)"
+                    @click="copyToClipboard(row.number, countries[row.country].substring)"
                     class="btn btn-success"
                   >
                     copy
