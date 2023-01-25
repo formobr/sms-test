@@ -225,7 +225,7 @@
                   {{ row.number }}
                   <button
                     v-if="row.number != '0'"
-                    @click="copyToClipboard(row.number)"
+                    @click="copyToClipboard(row.number, countries[row.country].substring+1)"
                     class="btn btn-success"
                   >
                     copy
@@ -333,8 +333,10 @@ async function getData(log) {
   return data.value;
 }
 
-const copyToClipboard = (val) => {
-  navigator.clipboard.writeText(val);
+const copyToClipboard = (val, substr) => {
+  let number = val.toString()
+  if (substr) number = number.substr(substr)
+  navigator.clipboard.writeText(number);
 };
 
 //local time

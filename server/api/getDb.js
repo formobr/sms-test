@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     const {login} = params
     const date = new Date(Date.now())
 
-    const query = `SELECT datetime, clientid, number, operator, service, code, hidden, numActivation  FROM handAPI
+    const query = `SELECT datetime, clientid, number, operator, service, code, hidden, numActivation, country FROM handAPI
     WHERE id = '${login}'`
     await pool.query(query).then((data) =>{result = data[0]}).catch((err) => console.log(err));
 

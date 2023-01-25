@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
       .then((data) => {
         result[i].value = data.data.count;
       })
-      .catch((err) => console.log(params));
+      .catch((err) => console.log(err));
   }
   return result;
 });

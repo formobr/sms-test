@@ -2,17 +2,20 @@ const countries = {
   Thailand:{
     name: "Thailand",
     value: "th",
-    providers: ['ANY', 'AIS', 'dtac', 'truemove', ]
+    providers: ['ANY', 'AIS', 'dtac', 'truemove', ],
+    substring: 1
   },
   Laos:{
     name: "Laos",
     value: "lo",
-    providers: ['ANY','telekom']
+    providers: ['ANY','telekom'],
+    substring: 2
   },
   Vietnam:{
     name: "Vietnam",
     value: "vn",
-    providers: ['ANY']
+    providers: ['ANY'],
+    substring: 3
   },
 }
 const services = [
