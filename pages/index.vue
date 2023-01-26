@@ -344,8 +344,10 @@ import dateNode from "date-and-time";
 const getLocalDate = (time) => {
   if (!time) return null;
   const date = new Date(time);
+  
   const dateUser = date.getTimezoneOffset() / -60;
   date.setHours(date.getHours() + dateUser);
+  
   return dateNode.format(date, "DD.MM.YYYY");
 };
 const getLocalTime = (time) => {
@@ -353,7 +355,8 @@ const getLocalTime = (time) => {
   const date = new Date(time);
   const dateUser = date.getTimezoneOffset() / -60;
   date.setHours(date.getHours() + dateUser);
-  return dateNode.format(date, "HH:MM");
+  const userTime = dateNode.format(date, "HH:mm");
+  return userTime
 };
 
 //Search and sort

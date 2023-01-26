@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
       oldCode ? (oldCode = `${oldCode};${code}`) : (oldCode = code);
 
       query = `UPDATE handAPI
-      text = '${oldText}',
+      SET text = '${oldText}',
       code = '${oldCode}'
       WHERE numActivation = '${activationId}' 
       `;
